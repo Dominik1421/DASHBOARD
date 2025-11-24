@@ -1,0 +1,31 @@
+<div class="header">
+    <h2 id="greeting"></h2>
+    <script>
+                (function() {
+            const student = 'Dominiku';
+            const greetingEl = document.getElementById('greeting');
+            function updateGreeting() {
+                const hours = new Date().getHours();
+                let msg = '';
+                if (hours < 12) {
+                    msg = "Dobré ráno";
+                } else if (hours < 18) {
+                    msg = "Dobrý den";
+                } else {
+                    msg = "Dobrý večer";
+                }
+                greetingEl.textContent = msg + ', ' + student + '!';
+            }
+                updateGreeting();
+        })();
+    </script>
+</div>
+<style>
+    .header {
+        background-color: #740c0c;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.1);
+        texy: white;
+    }
+</style>
