@@ -14,22 +14,40 @@
     // každý widget může mít konfiguraci: { name: 'název', width: 'full'|'half'|'third' }
     // nebo jednoduše string pro výchozí šířku
     const widgets = [
-  
-      { name: 'header', width: 'full ' },
-      { name: 'dominiku', width: 'full' },
-      { name: 'ahoj', width: 'full' },
+      { name: 'header', width: 'full' },
+      { name: 'clock', width: 'half' },
+      {name: 'ahoj', width: 'full'}
+
     ];
 
     async function loadWidgets() {
       const container = document.getElementById('dashboard');
       for (const widgetConfig of widgets) {
         // podpora pro string i objekt
-        const widgetName = widgetConfig.name;
-        const widgetWidth = widgetConfig.width;
-        
-        // načíst widget
-        const res = await fetch(`widgets/${widgetName}.html`);
-        const html = await res.text();
+        const widgetName = typeof widgetConfig === 'string'
+          ? widgetConfig.trim()
+          : widgetConfig.name?.trim();
+        const widgetWidth = typeof widgetConfig === 'string'
+          ? undefined
+          : widgetConfig.width?.trim();
+
+        if (!widgetName) {
+          console.warn('Widget bez názvu byl přeskočen.', widgetConfig);
+          continue;
+        }
+
+        let html;
+        try {
+          const res = await fetch(`widgets/${widgetName}.html`);
+          if (!res.ok) {
+            console.warn(`Widget "${widgetName}" se nepodařilo načíst (HTTP ${res.status}).`);
+            continue;
+          }
+          html = await res.text();
+        } catch (err) {
+          console.error(`Chyba při načítání widgetu "${widgetName}":`, err);
+          continue;
+        }
 
         // vytvořit wrapper pro widget
         const widgetWrapper = document.createElement('div');
