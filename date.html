@@ -1,0 +1,22 @@
+<div class="date">
+    <span id = "date-display"></span>
+        <script>
+            (funcion) {
+                const dateElement = documents.getElementById('date-display');
+                const date = new Date();
+                const fomattedDate = date.toLocaleDateString('cz - CZ', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                });
+                dateElement.textContent = 'Dnes je ${formattedDate}';
+            })();
+        </script>
+</div>
+<style>
+    .date{
+        display: flex;
+        justify-content: centre;
+        align-items: centre;
+    }
+</style>
