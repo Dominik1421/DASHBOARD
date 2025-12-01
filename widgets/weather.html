@@ -1,6 +1,9 @@
 <div class="weather-widget">
-    <div class="weather-city">Uherské Hradiště</div>
+    <!-- Místo pro název města -->
+    <div class="weather-city">Načítám...</div>
+    <!-- Místo pro teplotu -->
     <div class="weather-temp" id="weather-temp">--°C</div>
+    <!-- Místo pro popis (jasno, prší...) -->
     <div class="weather-desc" id="weather-desc">Načítám...</div>
 </div>
 
@@ -35,54 +38,58 @@
 </style>
 
 <script>
-    // Jednoduché live počasí z Open-Meteo (bez API klíče)
     (function () {
         const tempEl = document.getElementById('weather-temp');
         const descEl = document.getElementById('weather-desc');
+        const cityEl = document.querySelector('.weather-city');
 
-        // Souřadnice Uherského Hradiště (přibližně)
+        // Souřadnice pro Uherské Hradiště
         const lat = 49.069;
-        const lon = 17.460;
+        const long = 17.460;
 
-        function weatherText(code) {
-            // Základní mapování kódů na české texty
-            if ([0].includes(code)) return 'Jasno';
-            if ([1, 2].includes(code)) return 'Polojasno';
-            if ([3].includes(code)) return 'Zataženo';
-            if ([45, 48].includes(code)) return 'Mlha';
-            if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'Déšť';
-            if ([71, 73, 75, 85, 86].includes(code)) return 'Sníh';
-            if ([95, 96, 99].includes(code)) return 'Bouřka';
-            return 'Počasí';
+        function getWeatherDescription(code) {
+            if (code === 0) return 'Jasno';
+            if (code >= 1 && code <= 3) return 'Polojasno';
+            if (code >= 45 && code <= 48) return 'Mlha';
+            if (code >= 51 && code <= 67) return 'Déšť';
+            if (code >= 71 && code <= 77) return 'Sníh';
+            if (code >= 95) return 'Bouřka';
+            return 'Neznámé';
         }
 
         async function loadWeather() {
             try {
-                const url =
-                    'https://api.open-meteo.com/v1/forecast?latitude=' +
-                    lat +
-                    '&longitude=' +
-                    lon +
-                    '&current_weather=true&timezone=auto';
-
-                const res = await fetch(url);
-                const data = await res.json();
+                // Open-Meteo – aktuální počasí
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current_weather=true`;
+                const response = await fetch(weatherUrl);
+                const data = await response.json();
 
                 if (data && data.current_weather) {
-                    const t = data.current_weather.temperature;
+                    const temp = data.current_weather.temperature;
                     const code = data.current_weather.weathercode;
-                    tempEl.textContent = t.toFixed(1) + '°C';
-                    descEl.textContent = weatherText(code);
+                    tempEl.textContent = `${temp.toFixed(1)}°C`;
+                    descEl.textContent = getWeatherDescription(code);
                 } else {
                     descEl.textContent = 'Nelze načíst počasí';
                 }
             } catch (e) {
                 descEl.textContent = 'Chyba načítání';
             }
+
+            try {
+                // BigDataCloud – název města podle souřadnic
+                const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}&localityLanguage=cs`;
+                const responseGeo = await fetch(geoUrl);
+                const dataGeo = await responseGeo.json();
+                cityEl.textContent =
+                    dataGeo.city || dataGeo.locality || 'Neznámé místo';
+            } catch (e) {
+                cityEl.textContent = 'Neznámé místo';
+            }
         }
 
         loadWeather();
-        // Obnova každých 10 minut
+        // Obnovovat každých 10 minut
         setInterval(loadWeather, 10 * 60 * 1000);
     })();
 </script>
