@@ -1,0 +1,89 @@
+<div class="weather-widget">
+    <div class="weather-city">Uherské Hradiště</div>
+    <div class="weather-temp" id="weather-temp">--°C</div>
+    <div class="weather-desc" id="weather-desc">Načítám...</div>
+</div>
+
+<style>
+    .weather-widget {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-align: center;
+        padding: 1.5rem 2rem;
+        border-radius: 0.75rem;
+        background: #ffffff;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+        max-width: 220px;
+        margin: 0 auto;
+    }
+
+    .weather-city {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+
+    .weather-temp {
+        font-size: 2.3rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .weather-desc {
+        font-size: 0.95rem;
+        color: #555;
+    }
+</style>
+
+<script>
+    // Jednoduché live počasí z Open-Meteo (bez API klíče)
+    (function () {
+        const tempEl = document.getElementById('weather-temp');
+        const descEl = document.getElementById('weather-desc');
+
+        // Souřadnice Uherského Hradiště (přibližně)
+        const lat = 49.069;
+        const lon = 17.460;
+
+        function weatherText(code) {
+            // Základní mapování kódů na české texty
+            if ([0].includes(code)) return 'Jasno';
+            if ([1, 2].includes(code)) return 'Polojasno';
+            if ([3].includes(code)) return 'Zataženo';
+            if ([45, 48].includes(code)) return 'Mlha';
+            if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return 'Déšť';
+            if ([71, 73, 75, 85, 86].includes(code)) return 'Sníh';
+            if ([95, 96, 99].includes(code)) return 'Bouřka';
+            return 'Počasí';
+        }
+
+        async function loadWeather() {
+            try {
+                const url =
+                    'https://api.open-meteo.com/v1/forecast?latitude=' +
+                    lat +
+                    '&longitude=' +
+                    lon +
+                    '&current_weather=true&timezone=auto';
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data && data.current_weather) {
+                    const t = data.current_weather.temperature;
+                    const code = data.current_weather.weathercode;
+                    tempEl.textContent = t.toFixed(1) + '°C';
+                    descEl.textContent = weatherText(code);
+                } else {
+                    descEl.textContent = 'Nelze načíst počasí';
+                }
+            } catch (e) {
+                descEl.textContent = 'Chyba načítání';
+            }
+        }
+
+        loadWeather();
+        // Obnova každých 10 minut
+        setInterval(loadWeather, 10 * 60 * 1000);
+    })();
+</script>
+
