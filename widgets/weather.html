@@ -1,9 +1,6 @@
 <div class="weather-widget">
-    <!-- Místo pro název města -->
     <div class="weather-city">Načítám...</div>
-    <!-- Místo pro teplotu -->
     <div class="weather-temp" id="weather-temp">--°C</div>
-    <!-- Místo pro popis (jasno, prší...) -->
     <div class="weather-desc" id="weather-desc">Načítám...</div>
 </div>
 
@@ -43,7 +40,6 @@
         const descEl = document.getElementById('weather-desc');
         const cityEl = document.querySelector('.weather-city');
 
-        // Souřadnice pro Uherské Hradiště
         const lat = 49.069;
         const long = 17.460;
 
@@ -59,7 +55,6 @@
 
         async function loadWeather() {
             try {
-                // Open-Meteo – aktuální počasí
                 const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current_weather=true`;
                 const response = await fetch(weatherUrl);
                 const data = await response.json();
@@ -77,7 +72,6 @@
             }
 
             try {
-                // BigDataCloud – název města podle souřadnic
                 const geoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${long}&localityLanguage=cs`;
                 const responseGeo = await fetch(geoUrl);
                 const dataGeo = await responseGeo.json();
@@ -89,7 +83,6 @@
         }
 
         loadWeather();
-        // Obnovovat každých 10 minut
         setInterval(loadWeather, 10 * 60 * 1000);
     })();
 </script>
