@@ -44,3 +44,9 @@
   
   .widget.third {
     grid-column: span 3;
+  }
+  @medida (max-width: 600px) {
+    .widget.half {
+      grid-column: 1 / -1;
+      
+    }
