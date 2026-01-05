@@ -1,0 +1,90 @@
+<div class="color-picker">
+  <h3>Barva pozadí</h3>
+  <div class="color-circles">
+    <div class="color-circle" data-color="#000000" style="background-color: #000000;" title="Černá"></div>
+    <div class="color-circle" data-color="#ffffff" style="background-color: #ffffff; border: 2px solid #ccc;" title="Bílá"></div>
+    <div class="color-circle" data-color="#ffb7c5" style="background-color: #ffb7c5;" title="Sakura růžová"></div>
+    <div class="color-circle" data-color="#4a0075" style="background-color: #4a0075;" title="Tmavě fialová"></div>
+  </div>
+</div>
+
+<style>
+  .color-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .color-picker h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #333;
+  }
+
+  .color-circles {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .color-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .color-circle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .color-circle:active {
+    transform: scale(0.95);
+  }
+</style>
+
+<script>
+  (function() {
+    const colorMap = {
+      '#000000': '#d0d0d0',  // černá -> světle šedá
+      '#ffffff': '#f5f5f5',  // bílá -> světle šedá
+      '#4a0075': '#e8d5f0',  // tmavě fialová -> světle fialová
+      '#ffb7c5': '#ffe4e9'   // sakura růžová -> světle růžová
+    };
+
+    function applyColors(backgroundColor) {
+      document.body.style.backgroundColor = backgroundColor;
+      
+      const widgetColor = colorMap[backgroundColor] || '#ffffff';
+      const widgets = document.querySelectorAll('.widget');
+      widgets.forEach(widget => {
+        widget.style.backgroundColor = widgetColor;
+      });
+    }
+
+    const colorCircles = document.querySelectorAll('.color-circle');
+    
+    colorCircles.forEach(circle => {
+      circle.addEventListener('click', function() {
+        const color = this.getAttribute('data-color');
+        applyColors(color);
+        
+        // Uložit výběr do localStorage, aby se barva zachovala při obnovení stránky
+        localStorage.setItem('pageBackgroundColor', color);
+      });
+    });
+
+    // Načíst uloženou barvu při načtení stránky
+    const savedColor = localStorage.getItem('pageBackgroundColor');
+    if (savedColor) {
+      setTimeout(() => {
+        applyColors(savedColor);
+      }, 100);
+    }
+  })();
+</script>
