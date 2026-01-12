@@ -1,5 +1,4 @@
 <div class="mood-tracker" x-data="moodTracker()">
-  
   <div class="today-mood" x-show="todayMood">
     <p>Dnešní nálada:</p>
     <div class="mood-display">
@@ -12,41 +11,11 @@
     <p x-show="!todayMood">Jak se dnes cítíš?</p>
     <p x-show="todayMood">Změnit náladu:</p>
     <div class="mood-buttons">
-      <button 
-        class="mood-btn" 
-        @click="setMood('happy')"
-        :class="{ 'selected': todayMood && todayMood.mood === 'happy' }"
-        title="Šťastný">
-        😊
-      </button>
-      <button 
-        class="mood-btn" 
-        @click="setMood('good')"
-        :class="{ 'selected': todayMood && todayMood.mood === 'good' }"
-        title="Dobrý">
-        🙂
-      </button>
-      <button 
-        class="mood-btn" 
-        @click="setMood('neutral')"
-        :class="{ 'selected': todayMood && todayMood.mood === 'neutral' }"
-        title="Neutrální">
-        😐
-      </button>
-      <button 
-        class="mood-btn" 
-        @click="setMood('sad')"
-        :class="{ 'selected': todayMood && todayMood.mood === 'sad' }"
-        title="Smutný">
-        😢
-      </button>
-      <button 
-        class="mood-btn" 
-        @click="setMood('angry')"
-        :class="{ 'selected': todayMood && todayMood.mood === 'angry' }"
-        title="Naštvaný">
-        😠
-      </button>
+      <button class="mood-btn" @click="setMood('happy')" :class="{ 'selected': todayMood && todayMood.mood === 'happy' }" title="Šťastný">😊</button>
+      <button class="mood-btn" @click="setMood('good')" :class="{ 'selected': todayMood && todayMood.mood === 'good' }" title="Dobrý">🙂</button>
+      <button class="mood-btn" @click="setMood('neutral')" :class="{ 'selected': todayMood && todayMood.mood === 'neutral' }" title="Neutrální">😐</button>
+      <button class="mood-btn" @click="setMood('sad')" :class="{ 'selected': todayMood && todayMood.mood === 'sad' }" title="Smutný">😢</button>
+      <button class="mood-btn" @click="setMood('angry')" :class="{ 'selected': todayMood && todayMood.mood === 'angry' }" title="Naštvaný">😠</button>
     </div>
   </div>
 
@@ -70,205 +39,65 @@ function moodTracker() {
     moodHistory: [],
     
     init() {
-      this.loadMoods();
-      this.checkTodayMood();
-    },
-    
-    loadMoods() {
       const saved = localStorage.getItem('moodHistory');
-      if (saved) {
-        this.moodHistory = JSON.parse(saved);
-      }
+      if (saved) this.moodHistory = JSON.parse(saved);
+      this.syncToday();
     },
     
-    saveMoods() {
-      localStorage.setItem('moodHistory', JSON.stringify(this.moodHistory));
+    syncToday() {
+      const today = this.todayKey();
+      const todayEntry = this.moodHistory.find(e => e.date === today);
+      if (todayEntry) this.todayMood = todayEntry;
     },
     
-    checkTodayMood() {
-      const today = this.getTodayKey();
-      const todayEntry = this.moodHistory.find(entry => entry.date === today);
-      if (todayEntry) {
-        this.todayMood = todayEntry;
-      }
-    },
-    
-    getTodayKey() {
-      const today = new Date();
-      return today.toISOString().split('T')[0];
+    todayKey() {
+      return new Date().toISOString().split('T')[0];
     },
     
     setMood(mood) {
-      const today = this.getTodayKey();
-      
-      // Odstranit starý záznam pro dnešek, pokud existuje
-      this.moodHistory = this.moodHistory.filter(entry => entry.date !== today);
-      
-      // Přidat nový záznam
-      const newEntry = {
-        date: today,
-        mood: mood
-      };
-      
-      this.moodHistory.unshift(newEntry);
-      this.todayMood = newEntry;
-      this.saveMoods();
+      const today = this.todayKey();
+      this.moodHistory = this.moodHistory.filter(e => e.date !== today);
+      const entry = { date: today, mood };
+      this.moodHistory.unshift(entry);
+      this.todayMood = entry;
+      localStorage.setItem('moodHistory', JSON.stringify(this.moodHistory));
     },
     
     getMoodEmoji(mood) {
-      const emojis = {
-        'happy': '😊',
-        'good': '🙂',
-        'neutral': '😐',
-        'sad': '😢',
-        'angry': '😠'
-      };
-      return emojis[mood] || '😐';
+      return { happy: '😊', good: '🙂', neutral: '😐', sad: '😢', angry: '😠' }[mood] || '😐';
     },
     
     getMoodLabel(mood) {
-      const labels = {
-        'happy': 'Šťastný',
-        'good': 'Dobrý',
-        'neutral': 'Neutrální',
-        'sad': 'Smutný',
-        'angry': 'Naštvaný'
-      };
-      return labels[mood] || 'Neznámý';
+      return { happy: 'Šťastný', good: 'Dobrý', neutral: 'Neutrální', sad: 'Smutný', angry: 'Naštvaný' }[mood] || 'Neznámý';
     },
     
-    formatDate(dateString) {
-      const date = new Date(dateString);
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      if (dateString === this.getTodayKey()) {
-        return 'Dnes';
-      } else if (date.toDateString() === yesterday.toDateString()) {
-        return 'Včera';
-      } else {
-        return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
-      }
+    formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const today = this.todayKey();
+      const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+      if (dateStr === today) return 'Dnes';
+      if (date.toDateString() === yesterday.toDateString()) return 'Včera';
+      return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' });
     }
   }
 }
 </script>
 
 <style>
-  .mood-tracker {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .mood-tracker h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
-    color: #333;
-  }
-
-  .today-mood {
-    text-align: center;
-    padding: 1rem;
-    background: #f0f0f0;
-    border-radius: 8px;
-  }
-
-  .mood-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-
-  .mood-emoji-large {
-    font-size: 3rem;
-  }
-
-  .mood-label {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #555;
-  }
-
-  .mood-selector {
-    text-align: center;
-  }
-
-  .mood-selector p {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .mood-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .mood-btn {
-    font-size: 2rem;
-    width: 60px;
-    height: 60px;
-    border: 2px solid #ddd;
-    border-radius: 50%;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .mood-btn:hover {
-    transform: scale(1.1);
-    border-color: #999;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .mood-btn.selected {
-    border-color: #4a90e2;
-    background: #e8f4fd;
-    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-  }
-
-  .mood-history {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-  }
-
-  .mood-history p {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .history-items {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .history-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-    background: #f9f9f9;
-    border-radius: 6px;
-  }
-
-  .history-date {
-    font-size: 0.85rem;
-    color: #666;
-  }
-
-  .history-emoji {
-    font-size: 1.5rem;
-  }
+.mood-tracker { display: flex; flex-direction: column; gap: 1rem; }
+.today-mood { text-align: center; padding: 1rem; background: #f0f0f0; border-radius: 8px; }
+.mood-display { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.mood-emoji-large { font-size: 3rem; }
+.mood-label { font-size: 1.1rem; font-weight: bold; color: #555; }
+.mood-selector { text-align: center; }
+.mood-selector p { margin: 0 0 0.75rem 0; font-size: 0.9rem; color: #666; }
+.mood-buttons { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+.mood-btn { font-size: 2rem; width: 60px; height: 60px; border: 2px solid #ddd; border-radius: 50%; background: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.mood-btn:hover { transform: scale(1.1); border-color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.mood-btn.selected { border-color: #4a90e2; background: #e8f4fd; box-shadow: 0 2px 8px rgba(74,144,226,0.3); }
+.mood-history { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #eee; }
+.history-items { display: flex; flex-direction: column; gap: 0.5rem; }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f9f9f9; border-radius: 6px; }
+.history-date { font-size: 0.85rem; color: #666; }
+.history-emoji { font-size: 1.4rem; }
 </style>
