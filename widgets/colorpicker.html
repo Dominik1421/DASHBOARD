@@ -5,6 +5,7 @@
     <div class="color-circle" data-color="#ffffff" style="background-color: #ffffff; border: 2px solid #ccc;" title="Bílá"></div>
     <div class="color-circle" data-color="#ffb7c5" style="background-color: #ffb7c5;" title="Sakura růžová"></div>
     <div class="color-circle" data-color="#4a0075" style="background-color: #4a0075;" title="Tmavě fialová"></div>
+    <div class="color-circle" data-color="#000000" style="background-color: #000000;" title=""></div>
   </div>
 </div>
 
@@ -14,12 +15,16 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 
   .color-picker h3 {
     margin: 0;
     font-size: 1.2rem;
-    color: #333;
+    color: var(--widget-text-color);
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 
   .color-circles {
@@ -27,6 +32,8 @@
     gap: 1.5rem;
     justify-content: center;
     align-items: center;
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 
   .color-circle {
@@ -36,55 +43,121 @@
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 
   .color-circle:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 
   .color-circle:active {
     transform: scale(0.95);
+    background-color: var(--widget-bg);
+    color: var(--widget-text-color);
   }
 </style>
 
 <script>
   (function() {
-    const colorMap = {
-      '#000000': '#d0d0d0',  // černá -> světle šedá
-      '#ffffff': '#f5f5f5',  // bílá -> světle šedá
-      '#4a0075': '#e8d5f0',  // tmavě fialová -> světle fialová
-      '#ffb7c5': '#ffe4e9'   // sakura růžová -> světle růžová
+    // Mapování barev na názvy CSS souborů (stejný princip jako themes)
+    const colorToThemeMap = {
+      '#000000': 'cerna',
+      '#ffffff': 'bila',
+      '#ffb7c5': 'ruzova',
+      '#4a0075': 'fialova'
     };
 
-    function applyColors(backgroundColor) {
-      document.body.style.backgroundColor = backgroundColor;
+    // Globální funkce pro aplikování barev (stejný princip jako themes)
+    window.applyColorPicker = function(backgroundColor) {
+      const themeName = colorToThemeMap[backgroundColor];
+      if (!themeName) {
+        console.warn('Neznámá barva:', backgroundColor);
+        return;
+      }
+
+      // Najít nebo vytvořit link element
+      let colorLink = document.getElementById('color-picker-style');
       
-      const widgetColor = colorMap[backgroundColor] || '#ffffff';
-      const widgets = document.querySelectorAll('.widget');
-      widgets.forEach(widget => {
-        widget.style.backgroundColor = widgetColor;
-      });
-    }
+      if (!colorLink) {
+        // Pokud link neexistuje, vytvořit ho
+        colorLink = document.createElement('link');
+        colorLink.id = 'color-picker-style';
+        colorLink.rel = 'stylesheet';
+        document.head.appendChild(colorLink);
+      }
+      
+      // Vždy vytvořit nový link element, aby se CSS správně načetlo
+      const oldLink = document.getElementById('color-picker-style');
+      if (oldLink) {
+        oldLink.remove();
+      }
+      
+      colorLink = document.createElement('link');
+      colorLink.id = 'color-picker-style';
+      colorLink.rel = 'stylesheet';
+      colorLink.href = `themes/${themeName}.css`;
+      document.head.appendChild(colorLink);
+      
+      localStorage.setItem('pageBackgroundColor', backgroundColor);
+      console.log('Color picker nastaven na:', themeName, 'href:', colorLink.href);
+    };
 
-    const colorCircles = document.querySelectorAll('.color-circle');
-    
-    colorCircles.forEach(circle => {
-      circle.addEventListener('click', function() {
-        const color = this.getAttribute('data-color');
-        applyColors(color);
+    // Inicializace color pickeru (stejný princip jako themes)
+    function initColorPicker() {
+      const colorCircles = document.querySelectorAll('.color-circle');
+      
+      if (colorCircles.length === 0) {
+        setTimeout(initColorPicker, 100);
+        return;
+      }
+      
+      colorCircles.forEach(circle => {
+        // Odstranit staré event listenery
+        const newCircle = circle.cloneNode(true);
+        circle.parentNode.replaceChild(newCircle, circle);
         
-        // Uložit výběr do localStorage, aby se barva zachovala při obnovení stránky
-        localStorage.setItem('pageBackgroundColor', color);
+        newCircle.addEventListener('click', function() {
+          const color = this.getAttribute('data-color');
+          window.applyColorPicker(color);
+        });
       });
-    });
 
-    // Načíst uloženou barvu při načtení stránky
-    const savedColor = localStorage.getItem('pageBackgroundColor');
-    if (savedColor) {
-      setTimeout(() => {
-        applyColors(savedColor);
-      }, 100);
+      // Načíst uloženou barvu při načtení stránky
+      const savedColor = localStorage.getItem('pageBackgroundColor');
+      if (savedColor) {
+        setTimeout(() => {
+          window.applyColorPicker(savedColor);
+        }, 100);
+      }
     }
+
+    // Inicializace po načtení všech widgetů (stejný princip jako themes)
+    (function() {
+      // Počkat na načtení widgetů
+      if (window.onAllWidgetsLoaded) {
+        const oldCallback = window.onAllWidgetsLoaded;
+        window.onAllWidgetsLoaded = function() {
+          if (oldCallback) oldCallback();
+          setTimeout(initColorPicker, 200);
+        };
+      } else {
+        window.onAllWidgetsLoaded = function() {
+          setTimeout(initColorPicker, 200);
+        };
+      }
+
+      // Také zkusit inicializovat hned
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(initColorPicker, 300);
+        });
+      } else {
+        setTimeout(initColorPicker, 300);
+      }
+    })();
   })();
 </script>

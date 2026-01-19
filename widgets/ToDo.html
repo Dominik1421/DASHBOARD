@@ -50,6 +50,8 @@ function todoWidget() {
         display: flex;
         justify-content: space-between;
         box-shadow: 1px 1px 10px rgba(0, 0, 0, .2);
+        background: var(--widget-bg);
+        color: var(--body-text-color);
     }
     .todo-item-content {
         display: flex;
@@ -59,27 +61,38 @@ function todoWidget() {
     .todo-widget ul {
         list-style: none;
         padding: 0;
+        background: var(--widget-bg);
+        color: var(--widget-text-color);
     }
 
     .completed span {
         text-decoration: line-through;
+        color: var(--widget-text-color);
+        background: var(--widget-bg);
+        color: var(--widget-text-color);
     }
 
     .todo-widget button {
         cursor: pointer;
         padding: 5px 10px;
         background-color: tomato;
-        color: white;
+        color: var(--widget-text-color);
         border: none;
+        background: var(--widget-bg);
+        color: var(--widget-text-color);
     }
     .input-group {
         display: flex;
         align-items: center;
         margin-right: 10px;
         margin-bottom: 10px;
+        background: var(--widget-bg);
+        color: var(--widget-text-color);
     }
     .input-group input {
         padding: 5px 10px;
         width: 90%;
+        background: var(--widget-bg);
+        color: var(--widget-text-color);
     }
 </style>
